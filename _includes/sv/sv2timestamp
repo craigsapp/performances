@@ -1,0 +1,154 @@
+#!/usr/local/bin/perl
+#
+# Description: Convert from Sonic Visualiser files (with metadata headers)
+#              into timemap files.
+#
+
+use strict;
+
+
+my @FILES = @ARGV;
+
+print "[\n\n";
+
+my $output = "";
+foreach (my $a=0; $a<@FILES; $a++) {
+	my $file = $FILES[$a];
+	$output .= convertFile($file);
+	if ($a < $#FILES) {
+		$output .= ",\n\n";
+	}
+}
+
+print $output;
+
+print "\n]\n\n\n";
+
+exit(0);
+
+
+###########################################################################
+
+
+##############################
+##
+## convertFile --
+##
+
+sub convertFile {
+	my ($file) = @_;
+	open (FILE, $file) or die "Cannot read $file\n";
+	my @contents = <FILE>;
+	chomp @contents;
+	close FILE;
+
+	my %metadata = getMetadata(@contents);
+
+	my $beat = $metadata{"beat"};
+	$beat = 16 if $beat eq "sixteen";
+	$beat = 16 if $beat eq "sixteenth";
+	$beat = 16 if $beat eq "sixteenth-note";
+	$beat = 16 if $beat eq "sixteenth note";
+	$beat = 16 if $beat eq "sixteenthnote";
+	$beat = 8 if $beat eq "eight";
+	$beat = 8 if $beat eq "eighth";
+	$beat = 8 if $beat eq "eighth-note";
+	$beat = 8 if $beat eq "eighth note";
+	$beat = 8 if $beat eq "eighthnote";
+	$beat = 4 if $beat eq "four";
+	$beat = 4 if $beat eq "quarter";
+	$beat = 4 if $beat eq "quarter-note";
+	$beat = 4 if $beat eq "quarter note";
+	$beat = 4 if $beat eq "quarternote";
+	$beat = 2 if $beat eq "two";
+	$beat = 2 if $beat eq "half";
+	$beat = 2 if $beat eq "half-note";
+	$beat = 2 if $beat eq "half note";
+	$beat = 2 if $beat eq "halfnote";
+	$beat = 1 if $beat eq "one";
+	$beat = 1 if $beat eq "whole";
+	$beat = 1 if $beat eq "whole-note";
+	$beat = 1 if $beat eq "whole note";
+	$beat = 1 if $beat eq "wholenote";
+	$beat = 1.5 if $beat eq "dotted-quarter";
+	$beat = 1.5 if $beat eq "dotted quarter";
+	$beat = 1.5 if $beat eq "quarter-dot";
+	$beat = 1.5 if $beat eq "quarter dot";
+	$beat = 3.0 if $beat eq "dotted-half";
+	$beat = 3.0 if $beat eq "dotted half";
+	$beat = 3.0 if $beat eq "half-dot";
+	$beat = 3.0 if $beat eq "half dot";
+
+	my $title = $metadata{"title"};
+	$title =~ s/"/\\"/g;
+
+	my $performer = $metadata{"performer"};
+	$performer =~ s/"/\\"/g;
+
+	my $audio = $metadata{"track-name"};
+	$audio =~ s/"/\\"/g;
+	if ($audio !~ /\//) {
+		$audio = "/audio/$audio";
+	}
+	my $audiotype = "audio/mpeg";
+
+	my $output .= "{\n";
+	$output .= "\t\"work-title\": \"$title\",\n";
+	$output .= "\t\"performer\": \"$performer\",\n";
+	$output .= "\t\"audio\": \"$audio\", \"type\": \"$audiotype\",\n";
+	$output .= "\t\"timemap\":\n\t[";
+
+	my $counter = 0;
+
+	foreach my $line (@contents) {
+		next if $line =~ /^\s*$/;
+		next if $line =~ /^\s*#/;
+		$line =~ s/^\s+//;
+		$line =~ s/\s+$//;
+		my @data = split(/\t+/, $line);
+		next if @data != 2;
+		# 23.768004535	5.6
+		my $tstamp = $data[0];
+		my $label = $data[1];
+		next if $label !~ /^(\d+)\.(\d+)/;
+		my $measure = $1;
+		my $submeasure = $2;
+		my $moffset = ($submeasure - 1)*4.0/$beat;
+		my $qstamp = 4.0 / $beat * $counter;
+		$counter++;
+
+		$output .= "\n\t\t{\"m\":$measure,\t\"moffset\":$moffset,\t";
+		$output .= "\"qstamp\":$qstamp,\t\"tstamp\":$tstamp},";
+	}
+
+	$output =~ s/,$//;
+
+	$output .= "\n\t]\n";
+	$output .= "\n}";
+	return $output;
+}
+
+
+
+##############################
+##
+## getMetadata --
+##
+
+sub getMetadata {
+	my @contents = @_;
+	my %output;
+
+	foreach my $line (@contents) {
+		next if $line !~ /^\s*#+\s*([^:]+)\s*:\s*(.*)\s*$/;
+		my $key = $1;
+		my $value = $2;
+		$output{$key} = $value;
+	}
+	return %output;
+}
+
+
+
+
+
