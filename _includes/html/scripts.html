@@ -1,0 +1,120 @@
+
+<script>
+// Extra JavaScript functions
+
+
+//////////////////////////////
+//
+// Insert start-time class tags into SVG score.
+//
+
+function addQStamps(humdrum, svgcontainerid) {
+	var i;
+	var humlines = humdrum.split(/\n/);
+	var hum2d = [];
+	for (i=0; i<humlines.length; i++) {
+		hum2d.push(humlines[i].split("\t"));
+	}
+
+	var svg = document.querySelector("#" + svgcontainerid + " svg");
+	var notes = svg.querySelectorAll('g[id^="note-"]');
+
+	var line;
+	var field;
+	var subtok;
+	var matches;
+	var onstamp;
+	var offstamp;
+	var i;
+	for (i=0; i<notes.length; i++) {
+		id = notes[i].id;
+		if (!id) {
+			continue;
+		}
+		matches = id.match(/-L(\d+)F(\d+)/);
+		if (!matches) {
+			continue;
+		}
+		line = matches[1] - 1;
+		field = matches[2] - 1;
+		subtok = 0;
+		if (matches = id.match(/-L(\d+)F(\d+)S(\d+)/)) {
+			subtok = matches[3];
+		}
+		onstamp = "noteon-" + hum2d[line][0].replace(/\./g, "d");;
+		offstamp = getOffStampClass(hum2d[line][field], subtok, hum2d[line][0]);
+		notes[i].setAttribute("class", onstamp + " " + offstamp);
+	}
+}
+
+
+//////////////////////////////
+//
+// getOffStampClass --
+//
+
+function getOffStampClass(token, toknum, starttime) {
+	starttime = 1 * starttime;
+	if (toknum > 1) {
+		token = token.split(" ")[toknum-1];
+	}
+	var matches = token.match(/(\d+)%?(\d*)?(\.*)/);
+	var bot = parseInt(matches[1]);
+	var top = matches[2] ? parseInt(matches[2]) : 1;
+	var dots = 0;
+		if (matches[3] == ".") { dots = 1; }
+		else if (matches[3] == "..") { dots = 2; }
+		else if (matches[3] == "...") { dots = 3; }
+	var idur = top / bot;
+	var dur = idur;
+	if (dots == 1) {
+		dur = idur + 1/2 * idur;
+	}
+	if (dots == 2) {
+		dur = idur + 1/2 * idur + 1/4 * idur;
+	}
+	if (dots == 3) {
+		dur = idur + 1/2 * idur + 1/4 * idur + 1/8 * idur;
+	}
+	dur = dur * 4; // convert from whote-note durs to quarter-note durs
+	return "noteoff-" + (starttime + dur).toString().replace(/\./g, "d");
+}
+
+
+
+//////////////////////////////
+//
+// buildSelectList --
+//
+
+function buildSelectList(obj) {
+	var list = obj.timemaps;
+	var text = "<select onchange='selectPerformance(this);' id='select'>";
+	for (var i=0; i<list.length; i++) {
+		text += "<option value='" + i + "'>";
+		text += list[i].performer;
+		text += "</option>";
+	}
+	text += "</select>";
+	var container = document.querySelector("#select-container");
+	if (container) {
+		container.innerHTML = text;
+	} else {
+		console.log("Cannot insert select list on page");
+	}
+}
+
+
+//////////////////////////////
+//
+// selectPerformance -- 
+//
+
+function selectPerformance(element) {
+	console.log("elment.value", element.value);
+	musicbox.prepareAlignment(parseInt(element.value), 
+		"#musicbox-score-container");
+}
+
+</script>
+

@@ -1,0 +1,10 @@
+.DS_Index
+Gemfile.lock
+*.mp3
+*.wav
+*.mp4
+*.m4a
+*.m4v
+*.bak
+_site
+.jekyll-metadata

@@ -1,0 +1,39 @@
+repository: "craigsapp/score-alignment"
+
+output: "web"
+# this property is useful for conditional filtering of content that is separate from the PDF.
+
+# Sets the website to use local javascript/css only.
+#local: "true"
+local: "false"
+
+host: 127.0.0.1
+# the preview server used. Leave as is.
+
+port: 2222
+# the port where the preview is rendered. You can leave this as is unless you have other Jekyll builds using this same port that might cause conflicts. in that case, use another port such as 4006.
+
+production_url: http://performance.humdrum.org/
+BASE_PATH: http://performance.humdrum.org/
+
+# Location of CSS files and fonts.
+css: style
+
+exclude:
+  - .idea/
+  - .gitignore
+# these are the files and directories that jekyll will exclude from the build
+
+highlighter: rouge
+# library used for syntax highlighting
+
+markdown: kramdown
+kramdown:
+ input: GFM
+ auto_ids: true
+ hard_wrap: false
+ syntax_highlighter: rouge
+
+# filter used to process markdown. note that kramdown differs from github-flavored markdown in some subtle ways
+
+

@@ -1,0 +1,31 @@
+
+
+<script>
+// vim: ts=3
+
+var vrvToolkit = new verovio.toolkit();
+var musicbox;
+
+document.addEventListener("DOMContentLoaded", function() {
+	var data = document.querySelector("#input").textContent.replace(/^\s+/, "");
+	var options = {
+		inputFormat: "humdrum",
+		pageHeight: 50000,
+		adjustPageHeight: 1,
+		scale:  40,
+		font: "Leipzig"
+	};
+
+	var svg = vrvToolkit.renderData(data, JSON.stringify(options));
+	document.querySelector("#musicbox-score-container").innerHTML = svg;
+	addQStamps(data, "musicbox-score-container");
+
+   musicbox = new MusicBox;
+	musicbox.loadTimemapsFromPage();
+	musicbox.prepareAlignment(0, "#musicbox-score-container");
+	buildSelectList(musicbox);
+});
+</script>
+
+
+
