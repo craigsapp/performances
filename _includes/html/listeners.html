@@ -9,14 +9,14 @@ var musicbox;
 document.addEventListener("DOMContentLoaded", function() {
 	var data = document.querySelector("#input").textContent.replace(/^\s+/, "");
 	var options = {
-		inputFormat: "humdrum",
-		pageHeight: 50000,
+		format: "humdrum",
+		pageHeight: 60000,
 		adjustPageHeight: 1,
 		scale:  40,
 		font: "Leipzig"
 	};
 
-	var svg = vrvToolkit.renderData(data, JSON.stringify(options));
+	var svg = vrvToolkit.renderData(data, options);
 	document.querySelector("#musicbox-score-container").innerHTML = svg;
 	addQStamps(data, "musicbox-score-container");
 

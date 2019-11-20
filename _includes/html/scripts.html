@@ -1,6 +1,7 @@
 
 <script>
 // Extra JavaScript functions
+// vim: ts=3
 
 
 //////////////////////////////
@@ -89,7 +90,8 @@ function getOffStampClass(token, toknum, starttime) {
 
 function buildSelectList(obj) {
 	var list = obj.timemaps;
-	var text = "<select onchange='selectPerformance(this);' id='select'>";
+	var text = "";
+	text += "<select class='custom-select' onchange='selectPerformance(this);' id='select'>";
 	for (var i=0; i<list.length; i++) {
 		text += "<option value='" + i + "'>";
 		text += list[i].performer;
