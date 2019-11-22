@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 #
 # Description: Convert from Sonic Visualiser files (with metadata headers)
 #              into timemap files.
