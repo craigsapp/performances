@@ -37,3 +37,9 @@ kramdown:
 # filter used to process markdown. note that kramdown differs from github-flavored markdown in some subtle ways
 
 
+# example to display on the main page:
+#performance: etude-op10-no09
+performance: berceuse-op57
+
+
+

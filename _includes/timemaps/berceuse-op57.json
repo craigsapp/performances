@@ -3,7 +3,7 @@
 {
 	"work-title": "Berceuse, Op. 57",
 	"performer": "Raul Koczalski",
-	"audio": "/audio/NIFCCD-000-04-057-berceuse.mp3", "type": "audio/mpeg",
+	"audio": {"file": "/audio/NIFCCD-000-04-057-berceuse.mp3", "type": "audio/mpeg"},
 	"timemap":
 	[
 		{"m":1,	"moffset":0,	"qstamp":0,	"tstamp":5.758004535},
@@ -433,7 +433,7 @@
 {
 	"work-title": "Berceuse, Op. 57",
 	"performer": "Nicolai Demidenko",
-	"audio": "/audio/NIFCCD-014-01-057-berceuse.mp3", "type": "audio/mpeg",
+	"audio": {"file": "/audio/NIFCCD-014-01-057-berceuse.mp3", "type": "audio/mpeg"},
 	"timemap":
 	[
 		{"m":1,	"moffset":0,	"qstamp":0,	"tstamp":1.848004535},

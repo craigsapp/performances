@@ -95,7 +95,7 @@ sub convertFile {
 	my $output .= "{\n";
 	$output .= "\t\"work-title\": \"$title\",\n";
 	$output .= "\t\"performer\": \"$performer\",\n";
-	$output .= "\t\"audio\": \"$audio\", \"type\": \"$audiotype\",\n";
+	$output .= "\t\"audio\": {\"file\": \"$audio\", \"type\": \"$audiotype\"},\n";
 	$output .= "\t\"timemap\":\n\t[";
 
 	my $counter = 0;
