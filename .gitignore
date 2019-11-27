@@ -8,3 +8,5 @@ Gemfile.lock
 *.bak
 _site
 .jekyll-metadata
+verovio-toolkit.js
+musicbox.js

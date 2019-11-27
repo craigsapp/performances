@@ -125,8 +125,7 @@ MusicBox.prototype.setScoreStyle = function (style) {
 
 //////////////////////////////
 //
-// MusicBox.prototype.setActiveMediaElement -- Store the current 
-// 	audio/video element
+// MusicBox.prototype.setActiveTimemap -- 
 //
 
 MusicBox.prototype.setActiveTimemap = function (index, selector) {
@@ -539,6 +538,28 @@ MusicBox.prototype.loadTimemapsFromPage = function (selector) {
 
 
 
+///////////////////////////////
+//
+// MusicBox.prototype.roundTimemapsMilliseconds --
+//
+
+MusicBox.prototype.roundTimemapsMilliseconds = function () {
+	if (!this.timemaps) {
+		return;
+	}
+	for (var i=0; i<this.timemaps.length; i++) {
+		if (!this.timemaps[i].timemap) {
+			continue;
+		}
+		var tm = this.timemaps[i].timemap;
+		for (var j=0; j<tm.length; j++) {
+			tm[j].tstamp = parseInt(tm[j].tstamp * 1000.0 + 0.5) / 1000.0;
+		}
+	}
+}
+
+
+
 //////////////////////////////
 //
 // MusicBox.prototype.unpackSvg --
@@ -824,6 +845,7 @@ MusicBox.prototype.prepareAlignment = function (index, selector) {
 
 MusicBox.prototype.initializeInterface = function () {
 	var that = this;
+console.log("ADDED KEY DOWN EVENT HANDLER");
 	window.addEventListener('keydown', function(event) {
 		that.keydownEventHandler(event);
 	});
@@ -1104,11 +1126,14 @@ MusicBox.prototype.keydownEventHandler = function (event) {
 			break;
 
 		case SpaceKey:
+console.log("SPACE KEY PRESSED");
 			var iface = this.getActiveMediaElement();
 			if (iface) {
-				if (this.states.playing == 1) {
+				if (this.states.playing == 1) {;
+					this.states.playing = 0;
 					iface.pause();
 				} else {
+					this.states.playing = 1;
 					iface.play();
 				}
 			}
@@ -1208,6 +1233,7 @@ MusicBox.prototype.createAudioInterface = function (id) {
 		audio = document.createElement('AUDIO');
 		document.body.appendChild(audio);
 	}
+console.log("CREATING AUDIO INTERFACE");
 	var that = this;
 	audio.setAttribute('controls', 'controls');
 	audio.id              = id;
@@ -1217,29 +1243,43 @@ MusicBox.prototype.createAudioInterface = function (id) {
 	audio.style.right     = '0';
 	audio.style.width     = '100%';
 	audio.style.zIndex    = '1';
-	audio.addEventListener('play', function() {that.playMedia()});
-	audio.addEventListener('pause', function() {that.stopMedia()});
+	audio.onplay          = function() {console.log("ONPLAY"); that.playMedia()};
+	audio.onpause         = function() {console.log("ONPAUSE"); that.stopMedia()};
+	audio.onstop          = function() {console.log("ONSTOP"); that.stopMedia()};
 	var text = '<source src="' + this.getAudioFile();
 	text += '" type="' + that.getAudioType() + '"/>';
 	audio.innerHTML = text;
 	this.setActiveMediaElement(audio);
 
 	// timemap is probably already loaded:
+	if (typeof this.states === 'undefined') {
+		console.log("STATES NOT CREATED YET");
+		return;
+	}
 	if (!this.states.timemap) {
 		return;
 	}
 
-	var newstart = this.states.timemap[0].tstamp 
-			+ this.getAnticipationTime()/1000.0;
+	var tstamp = this.states.timemap[0].tstamp;
+	var anticipation = this.getAnticipationTime() / 1000.0;
+	var newstart = tstamp + anticipation;
 	var iface = this.getActiveMediaElement();
 	var that = this;
    if (iface) {
 		iface.addEventListener("loadedmetadata", function() {
 			console.log("LOADED META DATA");
-			if ((newstart >= 0.0) && (newstart > that.states.lasttime)) {
+			var lasttime = 0.0;
+			if (typeof that.states !== "undefined") {
+				lasttime = that.states.lasttime;
+			}
+			lasttime = lasttime - 0.001;
+			if (lasttime < 0.0) {
+				lasttime = 0.0;
+			}
+			if ((newstart >= 0.0) && (newstart > lasttime)) {
 				console.log("pushing start time ahead to", newstart, "seconds");
 				iface.currentTime    = newstart;
-				that.states.lasttime = newstart;
+				that.states.lasttime = newstart - 0.001;
 				console.log("Current time", iface.currentTime);
 			}
 		});
@@ -1300,9 +1340,23 @@ MusicBox.prototype.playMedia = function (event) {
 console.log("PLAYING MEDIA");
 	this.states.playing = 1;
 	var iface = this.getActiveMediaElement();
+console.log("ACTIVE MEDIA", iface);
+console.log("STATES", this.states);
 	this.states.lasttime = iface.currentTime;
-	var newstart = this.states.timemap[0].tstamp + this.getAnticipationTime()/1000.0;
+	var lasttime = iface.currentTime;
+	this.states.lasttime = lasttime - 0.001;
+	if (this.states.lasttime < 0.0) {
+		this.states.lasttime = 0.0;
+	}
+console.log("LASTTIME", this.states.lasttime);
+	var tstamp = this.states.timemap[0].tstamp;
+console.log("TSTAMP START", tstamp);
+	var anticipation = this.getAnticipationTime() / 1000.0;
+console.log("ANTICIPATION", anticipation);
+	var newstart = tstamp + anticipation;
+console.log("NEWSTART", newstart);
 	if ((newstart >= 0.0) && (newstart > this.states.lasttime)) {
+console.log("GOT HERE EEE");
 		iface.currentTime    = newstart;
 		this.states.lasttime = newstart;
 		console.log("Pushing start time ahead to", newstart, "seconds");
@@ -1338,8 +1392,8 @@ console.log("PLAYING MEDIA");
 
 MusicBox.prototype.stopMedia = function (event) {
 console.log("STOPPING MEDIA");
-	this.states.playing = 0; // make timemap monitoring setInterval() exit
 	this.unhighlightRange(0, this.getActiveTimemap().length-1);
+	this.states.playing = 0; // make timemap monitoring setInterval() exit
 }
 
 
@@ -1558,7 +1612,7 @@ MusicBox.prototype.bringIntoView = function (element) {
 
 //////////////////////////////
 //
-// checkTimeMap -- Monitor the timemap to see if any quarter note events
+// checkTimeMap -- Monitor the timemap to see if any qstamp events
 //    need to be processed.
 //
 
@@ -1590,8 +1644,8 @@ MusicBox.prototype.checkTimeMap = function (nowtime) {
 	}
 
 	if ((startindex >=0) && (stopindex >= 0)) {
-		this.highlightRange(startindex, stopindex);
 		this.unhighlightRange(startindex, stopindex);
+		this.highlightRange(startindex, stopindex);
 	}
 
 	var endtime = this.states.timemap[this.states.timemap.length-1].tstamp;
@@ -1609,8 +1663,9 @@ MusicBox.prototype.checkTimeMap = function (nowtime) {
 //////////////////////////////
 //
 // addNoteControls -- Add onclick callback so that when clicking on a note,
-//    the audio will start playing from that point in the score.  Change this
-//    to an event delegation later so not so many callbacks are added.
+//    the audio will start playing from that point in the score.  
+//    
+//    !!! Change this to an event delegation later so not so many callbacks are added.
 //
 
 MusicBox.prototype.addNoteControls = function () {
@@ -1653,7 +1708,7 @@ MusicBox.prototype.playFromEvent = function (event) {
 			iface.pause();
 			var quarter = matches[1];
 			var timeval = this.getTimeFromQuarterNote(quarter, -0.050);
-			this.states.lasttime = timeval + this.getAnticipationTime() / 1000.0;
+			this.states.lasttime = timeval + this.getAnticipationTime() / 1000.0 - 0.001;
 			this.states.lastscroll = null;
 			iface.currentTime = timeval + this.getAnticipationTime() / 1000.0;
 			iface.play();
@@ -1895,6 +1950,7 @@ MusicBox.prototype.getSvgElementList = function () {
 //
 
 MusicBox.prototype.getQstamps = function (selector) {
+console.log("SELECTOR", selector);
 	var svgs;
 	if (selector) {
 		svgs = [];
@@ -1973,6 +2029,7 @@ MusicBox.prototype.activateTimemap = function (index, selector) {
 
 	var basemap = this.timemaps[index].timemap;
 	var qstamps = this.getQstamps(selector);
+console.log("QSTAMPS  =" , qstamps);
 	qstamps = qstamps.sort(function(a,b){return a-b});
 
 	var nts = [];

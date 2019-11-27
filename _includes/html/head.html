@@ -1,15 +1,20 @@
+<title>Performance Player</title>
 <!--
 vim:  ts=3
 -->
-<title>SimpleAudioViewer</title>
-<script src="http://verovio-script.humdrum.org/scripts/verovio-toolkit.js"></script>
+
 
 {% if site.local == "true" %} 
-	<script src="http://musicbox.sapp.org/scripts/musicbox.js"></script>
+	<script src="/scripts/verovio-toolkit.js"></script>
 {% else %}
-	<script src="/scripts/musicbox.js"></script>
+	<script src="http://verovio-script.humdrum.org/scripts/verovio-toolkit.js"></script>
 {% endif %}
 
+{% if site.local == "true" %} 
+	<script src="/scripts/musicbox.js"></script>
+{% else %}
+	<script src="http://musicbox.sapp.org/scripts/musicbox.js"></script>
+{% endif %}
 
 
 {% include html/listeners.html %}
