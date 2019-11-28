@@ -2,3 +2,8 @@
 local: "true"
 #local: "false"
 
+
+# example to display on the main page:
+#performance: etude-op10-no09
+# Change to other performances (in the _config-local.yml file):
+performance: berceuse-op57

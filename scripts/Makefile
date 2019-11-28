@@ -8,7 +8,7 @@
 ##
 ## Description:   Makefile to download javascript programs for running
 ##                of the website locally.  After the scripts have been
-##                downloaded, type 
+##                downloaded, type:
 ##                     ./.serve-local
 ##                in the parent directory to run the local version of
 ##                the website.
@@ -17,4 +17,4 @@
 download:
 	wget https://musicbox.sapp.org/scripts/musicbox.js -O musicbox.js
 	wget https://verovio-script.humdrum.org/scripts/verovio-toolkit.js -O verovio-toolkit.js
-	
+
